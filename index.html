@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Edukasi: Juragan Kreatif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0fdfa; /* Fallback background */
+            background-image: url('https://i.imgur.com/UibOe0v.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .tab-btn.active {
+            background-color: #0d9488;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Floating Music Button */
+        .music-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .music-btn:hover {
+            transform: scale(1.1);
+        }
+        /* Hide app content before login */
+        #app-content {
+            display: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- AUDIO PLAYER -->
+    <!-- Ganti 'src' di bawah ini dengan link RAW dari file .mp3 di GitHub Ibu Rena -->
+    <!-- Contoh format link RAW GitHub: https://raw.githubusercontent.com/rena-create/musik-game-ekonomi-kreatif/main/namafile.mp3 -->
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Tombol Floating Musik -->
+    <button id="btn-music" onclick="toggleMusic()" class="music-btn bg-teal-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-xl hidden border-2 border-white">
+        <i class="fa-solid fa-music"></i>
+    </button>
+
+    <!-- ================= SECTION: LOGIN IDENTITAS ================= -->
+    <div id="login-section" class="fixed inset-0 bg-gradient-to-br from-teal-500 to-emerald-700 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center fade-in">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TeacherRena&backgroundColor=b6e3f4" alt="Maskot" class="w-28 h-28 mx-auto bg-teal-100 rounded-full mb-4 shadow-inner p-2 border-4 border-teal-500">
+            <h2 class="text-3xl font-extrabold text-teal-700 mb-2">Juragan Kreatif</h2>
+            <p class="text-gray-500 mb-6 font-medium">Proyek IPAS X SMK Negeri 1 Pandeglang</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="student-name">Nama Lengkap</label>
+                    <input id="student-name" type="text" placeholder="Contoh: Budi Santoso" class="w-full px-4 py-3 rounded-xl border-2 border-teal-100 focus:border-teal-500 focus:outline-none transition-colors bg-gray-50">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="student-class">Kelas / Jurusan</label>
+                    <input id="student-class" type="text" placeholder="Contoh: X TKJ 1" class="w-full px-4 py-3 rounded-xl border-2 border-teal-100 focus:border-teal-500 focus:outline-none transition-colors bg-gray-50">
+                </div>
+                <div id="login-error" class="text-red-500 text-sm font-bold hidden text-center mt-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Silakan isi Nama dan Kelasmu dulu ya!
+                </div>
+            </div>
+            
+            <button onclick="startGameLogin()" class="w-full mt-8 bg-yellow-400 text-teal-900 py-3 rounded-xl font-black text-lg hover:bg-yellow-500 shadow-lg transition-transform hover:scale-105 uppercase tracking-wide">
+                Mulai Belajar <i class="fa-solid fa-rocket ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= APP CONTENT ================= -->
+    <div id="app-content" class="flex flex-col min-h-screen">
+        <!-- Header / Dashboard Info -->
+        <header class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg p-6 rounded-b-3xl mb-8 mx-0 md:mx-4 mt-0 md:mt-4">
+            <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight"><i class="fa-solid fa-lightbulb text-yellow-300 mr-2"></i>Juragan Kreatif</h1>
+                    <p class="text-teal-100 mt-1 font-medium text-sm md:text-base">Misi Ekonomi Kreatif SMK</p>
+                </div>
+                
+                <!-- Dashboard Info Siswa -->
+                <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-sm border border-white/20 flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-center">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-teal-700 p-2 rounded-full"><i class="fa-solid fa-user-graduate"></i></div>
+                        <div class="text-left leading-tight">
+                            <div id="dash-name" class="font-bold text-white text-sm md:text-base truncate max-w-[150px]">Nama</div>
+                            <div id="dash-class" class="text-teal-200 text-xs font-semibold">Kelas</div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:block w-px h-8 bg-white/30"></div>
+                    <div class="flex items-center gap-2 bg-yellow-400 text-teal-900 px-4 py-2 rounded-xl font-black shadow-inner">
+                        <i class="fa-solid fa-star"></i>
+                        <span id="dash-score">Skor: 0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Menu -->
+        <nav class="max-w-4xl mx-auto w-full px-4 mb-6">
+            <div class="bg-white rounded-full shadow-md p-2 flex overflow-x-auto gap-2 justify-center hide-scroll">
+                <button onclick="showTab('home')" id="tab-home" class="tab-btn active px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:bg-teal-100 hover:text-teal-700 whitespace-nowrap">
+                    <i class="fa-solid fa-house mr-2"></i>Beranda
+                </button>
+                <button onclick="showTab('tujuan')" id="tab-tujuan" class="tab-btn px-6 py-2 rounded-full font-semibold text-gray-600 transition-all duration-300 hover:bg-teal-100 hover:text-teal-700 whitespace-nowrap">
+                    <i class="fa-solid fa-bullseye mr-2"></i>Tujuan
+                </button>
+                <button onclick="showTab('game')" id="tab-game" class="tab-btn px-6 py-2 rounded-full font-semibold text-gray-600 transition-all duration-300 hover:bg-teal-100 hover:text-teal-700 whitespace-nowrap">
+                    <i class="fa-solid fa-gamepad mr-2"></i>Game Seru
+                </button>
+                <button onclick="showTab('latihan')" id="tab-latihan" class="tab-btn px-6 py-2 rounded-full font-semibold text-gray-600 transition-all duration-300 hover:bg-teal-100 hover:text-teal-700 whitespace-nowrap">
+                    <i class="fa-solid fa-stopwatch mr-2"></i>Latihan Soal
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="max-w-4xl mx-auto w-full px-4 flex-grow mb-12">
+            
+            <!-- SECTION: BERANDA -->
+            <section id="content-home" class="bg-white rounded-3xl shadow-xl p-8 fade-in text-center border-t-4 border-teal-500">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TeacherRena&backgroundColor=b6e3f4" alt="Maskot" class="w-32 h-32 mx-auto bg-teal-100 rounded-full mb-4 shadow-inner p-2">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Halo, <span id="welcome-name" class="text-teal-600">Sobat</span>! 👋</h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    Selamat datang di modul interaktif <strong>Ekonomi Kreatif</strong>. Pernahkah kamu membayangkan bagaimana ide sederhana di kepalamu bisa berubah menjadi produk yang menghasilkan cuan dan membantu masyarakat sekitar? Di sini kita akan belajar cara berpikir ala pengusaha sukses!
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100">
+                        <i class="fa-solid fa-brain text-4xl text-orange-400 mb-3"></i>
+                        <h3 class="font-bold text-lg">Asah Ide</h3>
+                        <p class="text-sm text-gray-500">Ubah barang biasa jadi luar biasa.</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                        <i class="fa-solid fa-handshake-angle text-4xl text-blue-400 mb-3"></i>
+                        <h3 class="font-bold text-lg">Bantu Sesama</h3>
+                        <p class="text-sm text-gray-500">Buka lapangan kerja baru untuk warga.</p>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-2xl border border-green-100">
+                        <i class="fa-solid fa-sack-dollar text-4xl text-green-400 mb-3"></i>
+                        <h3 class="font-bold text-lg">Hasilkan Cuan</h3>
+                        <p class="text-sm text-gray-500">Raih kesejahteraan lewat kreativitas.</p>
+                    </div>
+                </div>
+                <button onclick="showTab('tujuan')" class="mt-8 bg-teal-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-teal-700 hover:scale-105 transition-all">Mulai Petualangan <i class="fa-solid fa-arrow-right ml-2"></i></button>
+            </section>
+
+            <!-- SECTION: TUJUAN PEMBELAJARAN -->
+            <section id="content-tujuan" class="bg-white rounded-3xl shadow-xl p-8 fade-in hidden border-t-4 border-yellow-400">
+                <div class="flex items-center mb-6">
+                    <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                        <i class="fa-solid fa-bullseye text-2xl text-yellow-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold">Tujuan Pembelajaran Kita</h2>
+                </div>
+                <p class="text-gray-600 mb-6">Setelah menyelesaikan modul seru ini, kalian diharapkan jago dalam hal-hal berikut:</p>
+                
+                <ul class="space-y-4">
+                    <li class="flex items-start bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm">
+                        <span class="bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0 mt-0.5">1</span>
+                        <div class="ml-4">
+                            <h3 class="font-bold text-gray-800">Memahami Konsep Ekonomi Kreatif</h3>
+                            <p class="text-gray-600 text-sm mt-1">Mengerti bahwa modal utama bisnis zaman now bukan cuma uang, tapi <strong>IDE</strong> dan <strong>KREATIVITAS</strong>.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm">
+                        <span class="bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0 mt-0.5">2</span>
+                        <div class="ml-4">
+                            <h3 class="font-bold text-gray-800">Menganalisis Perilaku Ekonomi</h3>
+                            <p class="text-gray-600 text-sm mt-1">Mampu melihat peluang di lingkungan sekitar (misal limbah, hasil bumi lokal) dan memberikannya nilai tambah.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm">
+                        <span class="bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0 mt-0.5">3</span>
+                        <div class="ml-4">
+                            <h3 class="font-bold text-gray-800">Kaitan dengan Kesejahteraan Sosial</h3>
+                            <p class="text-gray-600 text-sm mt-1">Menyadari bahwa dengan membuka usaha kreatif, kita bisa mengurangi pengangguran dan memakmurkan warga desa/kota kita.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="mt-8 text-center">
+                    <button onclick="showTab('game')" class="bg-yellow-500 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-yellow-600 hover:scale-105 transition-all">Lanjut Main Game <i class="fa-solid fa-gamepad ml-2"></i></button>
+                </div>
+            </section>
+
+            <!-- SECTION: GAME EDUKASI -->
+            <section id="content-game" class="bg-white rounded-3xl shadow-xl p-8 fade-in hidden border-t-4 border-purple-500">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-purple-700">Misi: Penyelamat Desa 🦸‍♂️</h2>
+                    <p class="text-gray-600 mt-2">Pilih keputusan bisnis yang paling KREATIF untuk menyelamatkan perekonomian desamu!</p>
+                </div>
+
+                <!-- Game Container -->
+                <div id="game-container" class="bg-purple-50 rounded-2xl p-6 border border-purple-100">
+                    <div class="flex justify-between items-center mb-4 text-sm font-bold text-purple-800">
+                        <span id="game-level" class="bg-purple-200 px-3 py-1 rounded-full">Level: 1/10</span>
+                        <span id="game-score-display" class="bg-purple-200 px-3 py-1 rounded-full text-purple-700"><i class="fa-solid fa-coins text-yellow-500 mr-1"></i> Poin Level: 0</span>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+                        <div class="flex items-center mb-4 text-4xl" id="game-emoji">🎋</div>
+                        <p id="game-question" class="text-lg font-medium text-gray-800 leading-relaxed">
+                            Memuat skenario...
+                        </p>
+                    </div>
+
+                    <div id="game-choices" class="space-y-3">
+                        <!-- Buttons generated by JS -->
+                    </div>
+
+                    <div id="game-feedback" class="hidden mt-6 p-4 rounded-xl font-bold text-center animate-bounce">
+                        <!-- Feedback text generated by JS -->
+                    </div>
+
+                    <button id="btn-next-game" onclick="nextGameLevel()" class="hidden w-full mt-4 bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors">Lanjut Skenario Berikutnya</button>
+                </div>
+                
+                <!-- Game Result -->
+                <div id="game-result" class="hidden text-center bg-purple-100 p-8 rounded-2xl">
+                    <i class="fa-solid fa-trophy text-6xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Misi Selesai!</h3>
+                    <p id="game-final-msg" class="text-lg text-gray-600 mb-6"></p>
+                    <button onclick="resetGame()" class="bg-purple-600 text-white px-6 py-2 rounded-full font-bold hover:bg-purple-700 mr-2"><i class="fa-solid fa-rotate-right mr-1"></i> Main Lagi</button>
+                    <button onclick="showTab('latihan')" class="bg-teal-600 text-white px-6 py-2 rounded-full font-bold hover:bg-teal-700 mt-2 sm:mt-0"><i class="fa-solid fa-pen-clip mr-1"></i> Tantangan Kuis</button>
+                </div>
+            </section>
+
+            <!-- SECTION: LATIHAN SOAL DENGAN TIMER -->
+            <section id="content-latihan" class="bg-white rounded-3xl shadow-xl p-8 fade-in hidden border-t-4 border-blue-500">
+                <div class="flex flex-col sm:flex-row items-center justify-between mb-6 border-b pb-4 gap-4">
+                    <h2 class="text-2xl font-bold text-blue-700"><i class="fa-solid fa-clipboard-question mr-2"></i> Latihan Soal IPAS</h2>
+                    <div class="flex gap-2">
+                        <span class="bg-red-100 text-red-700 text-sm font-bold px-4 py-2 rounded-full flex items-center shadow-inner border border-red-200">
+                            <i class="fa-regular fa-clock mr-2 animate-pulse"></i><span id="quiz-timer">10:00</span>
+                        </span>
+                        <span class="bg-blue-100 text-blue-800 text-sm font-bold px-4 py-2 rounded-full" id="quiz-progress">Soal 1/10</span>
+                    </div>
+                </div>
+
+                <!-- Intro Kuis (Sebelum Timer Mulai) -->
+                <div id="quiz-intro" class="text-center py-8">
+                    <i class="fa-solid fa-stopwatch text-6xl text-blue-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">Siap Uji Nyali?</h3>
+                    <p class="text-gray-600 mb-6">Kamu punya waktu <strong>10 Menit</strong> untuk menyelesaikan 10 soal ini. Semakin tinggi skormu, namamu makin bersinar di Dashboard!</p>
+                    <button onclick="startQuizTimer()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-105">
+                        Mulai Kerjakan Sekarang
+                    </button>
+                </div>
+
+                <!-- Quiz Container -->
+                <div id="quiz-container" class="hidden">
+                    <h3 id="quiz-question" class="text-xl font-medium text-gray-800 mb-6 leading-relaxed">Memuat soal...</h3>
+                    <div id="quiz-options" class="grid grid-cols-1 gap-3">
+                        <!-- Options generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Quiz Result -->
+                <div id="quiz-result" class="hidden text-center py-8">
+                    <div id="quiz-score-circle" class="w-32 h-32 rounded-full border-8 border-blue-500 flex items-center justify-center mx-auto mb-6 text-4xl font-black text-blue-600">
+                        100
+                    </div>
+                    <h3 id="quiz-verdict" class="text-2xl font-bold text-gray-800 mb-2">Luar Biasa!</h3>
+                    <p id="quiz-msg" class="text-gray-600 mb-8">Kamu sudah paham banget materi Ekonomi Kreatif!</p>
+                    <button onclick="resetQuizFull()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-105">
+                        <i class="fa-solid fa-rotate-right mr-2"></i>Ulangi Latihan
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer with Copyright -->
+        <footer class="bg-gray-800 text-white text-center py-6 mt-auto">
+            <div class="max-w-4xl mx-auto px-4">
+                <div class="flex justify-center items-center space-x-2 text-yellow-400 mb-2">
+                    <i class="fa-solid fa-star text-sm"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star text-sm"></i>
+                </div>
+                <p class="font-medium text-gray-300">Dibuat khusus untuk siswa-siswi Hebat</p>
+                <p class="text-sm mt-2 text-gray-400">
+                    &copy; Copyright <strong>Rena Eka Setiawaty 2026</strong><br>
+                    SMK Negeri 1 Pandeglang
+                </p>
+            </div>
+        </footer>
+    </div> <!-- End App Content -->
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA IDENTITAS & DASHBOARD ---
+        let userData = {
+            name: "",
+            className: "",
+            globalScore: 0
+        };
+
+        function startGameLogin() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            const classInput = document.getElementById('student-class').value.trim();
+            
+            if(nameInput === "" || classInput === "") {
+                document.getElementById('login-error').classList.remove('hidden');
+                return;
+            }
+
+            // Save Data
+            userData.name = nameInput;
+            userData.className = classInput;
+            
+            // Update UI
+            document.getElementById('welcome-name').innerText = userData.name;
+            document.getElementById('dash-name').innerText = userData.name;
+            document.getElementById('dash-class').innerText = userData.className;
+            
+            // Transition Screen
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('app-content').style.display = 'flex';
+            document.getElementById('btn-music').classList.remove('hidden');
+            
+            // Start Music automatically if browser allows
+            let bgMusic = document.getElementById('bg-music');
+            bgMusic.volume = 0.3; // 30% volume
+            bgMusic.play().catch(e => console.log("Auto-play prevented by browser. User must click music button."));
+            
+            // Set initial state
+            updateDashboardScore();
+        }
+
+        function updateDashboardScore() {
+            // Global Score is combination of Game and Quiz (Max 200)
+            userData.globalScore = (currentGameState.score * 10) + currentQuizState.score;
+            document.getElementById('dash-score').innerText = `Skor: ${userData.globalScore}`;
+        }
+
+        // --- MUSIC LOGIC ---
+        let isMusicPlaying = true;
+        function toggleMusic() {
+            let bgMusic = document.getElementById('bg-music');
+            let btnMusic = document.getElementById('btn-music');
+            
+            if (bgMusic.paused) {
+                bgMusic.play();
+                btnMusic.innerHTML = '<i class="fa-solid fa-music"></i>';
+                btnMusic.classList.remove('bg-gray-500');
+                btnMusic.classList.add('bg-teal-600');
+            } else {
+                bgMusic.pause();
+                btnMusic.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                btnMusic.classList.remove('bg-teal-600');
+                btnMusic.classList.add('bg-gray-500');
+            }
+        }
+
+        // --- TAB NAVIGATION LOGIC ---
+        function showTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-teal-600', 'text-white');
+                btn.classList.add('text-gray-600');
+            });
+            
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-' + tabId);
+            activeBtn.classList.add('active');
+            activeBtn.classList.remove('text-gray-600');
+            
+            if(tabId === 'game' && currentGameState.level === 0) { renderGame(); }
+            // Timer tab is handled by Mulai button inside the tab
+        }
+
+        // --- GAME LOGIC ---
+        const gameScenarios = [
+            { emoji: "🎋", q: "Warga Desa Pandeglang punya banyak limbah bambu sisa bangunan. Inovasi kreatif apa yang bisa kamu buat?", choices: [{ text: "A. Dijual murah sebagai kayu bakar.", correct: false, feedback: "Waduh, harganya murah banget. 😢" }, { text: "B. Diolah menjadi lampu hias estetik dan dijual online.", correct: true, feedback: "Tepat Sekali! Kamu memberikan NILAI TAMBAH! 🚀" }]},
+            { emoji: "🥟", q: "Bu Aminah jualan emping melinjo. Bagaimana cara kreatif meningkatkan penjualannya?", choices: [{ text: "A. Membuat varian rasa dengan kemasan 'Standing Pouch'.", correct: true, feedback: "Keren! Inovasi produk bikin harga jual naik drastis! 💸" }, { text: "B. Menurunkan harga jual terus menerus.", correct: false, feedback: "Kurang tepat. Menurunkan harga terus bisa rugi. 📉" }]},
+            { emoji: "📱", q: "Tidak punya modal iklan, apa solusi 'Marketing Kreatif' mu untuk tas pandan?", choices: [{ text: "A. Menunggu pembeli lewat depan rumah.", correct: false, feedback: "Zaman sekarang jangan pasif! 😴" }, { text: "B. Membuat video proses pembuatan di TikTok/Reels.", correct: true, feedback: "Brilian! Pemasaran digital adalah kunci! 📱✨" }]},
+            { emoji: "☕", q: "Inovasi apa yang bisa bikin gula aren petani bernilai tinggi?", choices: [{ text: "A. Mengolahnya menjadi 'Liquid Palm Sugar' untuk kedai kopi.", correct: true, feedback: "Mantap! Anak kopi senja pasti butuh ini. ☕" }, { text: "B. Menyimpan gula aren di gudang sampai harga naik.", correct: false, feedback: "Ini namanya menimbun barang. ❌" }]},
+            { emoji: "👕", q: "Banyak pakaian bekas layak pakai di rumah. Apa ide kreatifmu?", choices: [{ text: "A. Membuangnya ke tempat sampah.", correct: false, feedback: "Sayang banget padahal bisa jadi cuan. 🗑️" }, { text: "B. Dirombak ulang (Upcycling) menjadi totebag estetik.", correct: true, feedback: "Super kreatif! Upcycling sedang tren. 🌍♻️" }]},
+            { emoji: "🏞️", q: "Desamu punya pemandangan sawah indah. Apa langkah kreatifmu?", choices: [{ text: "A. Membangun spot foto dan paket wisata 'Homestay'.", correct: true, feedback: "Ide brilian! Buka lapangan kerja baru. 🏕️" }, { text: "B. Membiarkan saja.", correct: false, feedback: "Sayang potensinya terbuang. 🚫" }]},
+            { emoji: "💻", q: "Temanmu jago desain di Canva. Bagaimana cara menghasilkan cuan?", choices: [{ text: "A. Membuka jasa desain logo untuk UMKM lokal.", correct: true, feedback: "Tepat! Sangat menjanjikan! 🎨" }, { text: "B. Menyimpan hasil karya di laptop saja.", correct: false, feedback: "Karyamu luar biasa, sayang kalau disimpan. 😥" }]},
+            { emoji: "🥥", q: "Setelah buat es kelapa, batoknya dibuang. Ide apa yang kamu tawarkan?", choices: [{ text: "A. Membakarnya di halaman rumah.", correct: false, feedback: "Polusi udara! 🌫️" }, { text: "B. Mengolahnya menjadi briket arang untuk ekspor.", correct: true, feedback: "Luar biasa! Pasarnya luas hingga luar negeri. 🥥✨" }]},
+            { emoji: "🛵", q: "Ibu-ibu jualan makanan tapi sepi karena susah mengantar. Kamu jago IT, solusinya?", choices: [{ text: "A. Membuat grup WA layanan 'Kurir Desa'.", correct: true, feedback: "Wah, ekosistem bisnis digital lokal tercipta! 🛵📱" }, { text: "B. Menyuruh berhenti jualan.", correct: false, feedback: "Bukan solusi yang baik. 🛑" }]},
+            { emoji: "🎭", q: "Sanggar tari sepi peminat. Bagaimana menghidupkannya?", choices: [{ text: "A. Memaksa anak sekolah ikut sebagai hukuman.", correct: false, feedback: "Kreativitas tidak bisa dipaksakan. 😠" }, { text: "B. Menggabungkan tarian tradisional dengan musik modern.", correct: true, feedback: "Sempurna! Inovasi seni pertunjukan! 💃🎶" }]}
+        ];
+
+        let currentGameState = { level: 0, score: 0 };
+
+        function renderGame() {
+            const scenario = gameScenarios[currentGameState.level];
+            document.getElementById('game-level').innerText = `Level: ${currentGameState.level + 1}/${gameScenarios.length}`;
+            document.getElementById('game-score-display').innerHTML = `<i class="fa-solid fa-coins text-yellow-500 mr-1"></i> Poin Level: ${currentGameState.score * 10}`;
+            document.getElementById('game-emoji').innerText = scenario.emoji;
+            document.getElementById('game-question').innerText = scenario.q;
+            
+            const choicesContainer = document.getElementById('game-choices');
+            choicesContainer.innerHTML = '';
+            document.getElementById('game-feedback').classList.add('hidden');
+            document.getElementById('btn-next-game').classList.add('hidden');
+
+            scenario.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-white border-2 border-purple-200 p-4 rounded-xl hover:bg-purple-50 hover:border-purple-400 transition-all font-medium text-gray-700";
+                btn.innerText = choice.text;
+                btn.onclick = () => handleGameChoice(choice.correct, btn);
+                choicesContainer.appendChild(btn);
+            });
+        }
+
+        function handleGameChoice(isCorrect, selectedBtn) {
+            const buttons = document.getElementById('game-choices').querySelectorAll('button');
+            buttons.forEach(b => { b.disabled = true; b.classList.remove('hover:bg-purple-50', 'hover:border-purple-400'); });
+
+            const feedbackBox = document.getElementById('game-feedback');
+            feedbackBox.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+
+            if (isCorrect) {
+                currentGameState.score += 1; 
+                selectedBtn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                feedbackBox.classList.add('bg-green-100', 'text-green-800');
+                feedbackBox.innerHTML = gameScenarios[currentGameState.level].choices.find(c => c.correct).feedback;
+            } else {
+                selectedBtn.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
+                feedbackBox.classList.add('bg-red-100', 'text-red-800');
+                feedbackBox.innerHTML = gameScenarios[currentGameState.level].choices.find(c => !c.correct).feedback;
+                buttons.forEach(b => {
+                    if(gameScenarios[currentGameState.level].choices.find(c => c.text === b.innerText).correct) {
+                        b.classList.add('border-green-400', 'bg-green-50');
+                    }
+                });
+            }
+
+            document.getElementById('game-score-display').innerHTML = `<i class="fa-solid fa-coins text-yellow-500 mr-1"></i> Poin Level: ${currentGameState.score * 10}`;
+            updateDashboardScore();
+            document.getElementById('btn-next-game').classList.remove('hidden');
+        }
+
+        function nextGameLevel() {
+            currentGameState.level++;
+            if (currentGameState.level < gameScenarios.length) { renderGame(); } 
+            else { finishGame(); }
+        }
+
+        function finishGame() {
+            document.getElementById('game-container').classList.add('hidden');
+            document.getElementById('game-result').classList.remove('hidden');
+            
+            const finalScore = currentGameState.score * 10;
+            let msg = "";
+            if (finalScore >= 90) msg = "Luar Biasa! Kamu punya insting Pengusaha Kreatif sejati.";
+            else if (finalScore >= 50) msg = "Cukup Bagus! Ide-idemu lumayan, asah lagi insting inovasinya.";
+            else msg = "Jangan Menyerah! Kegagalan adalah guru terbaik bagi calon pengusaha.";
+            
+            document.getElementById('game-final-msg').innerText = msg;
+        }
+
+        function resetGame() {
+            currentGameState = { level: 0, score: 0 };
+            updateDashboardScore();
+            document.getElementById('game-container').classList.remove('hidden');
+            document.getElementById('game-result').classList.add('hidden');
+            renderGame();
+        }
+
+        // --- QUIZ & TIMER LOGIC ---
+        const quizData = [
+            { q: "Apa yang menjadi modal paling utama dalam mengembangkan 'Ekonomi Kreatif'?", options: ["Lahan luas", "Uang miliaran", "Ide, inovasi, dan kreativitas", "Mesin canggih"], answer: 2 },
+            { q: "Mengubah kain perca menjadi tas jinjing disebut menciptakan...", options: ["Nilai Tambah (Value Added)", "Kerugian materi", "Inflasi daerah", "Konsumsi berlebihan"], answer: 0 },
+            { q: "Contoh subsektor ekonomi kreatif adalah...", options: ["Pertanian gandum", "Aplikasi, Game, Kuliner Inovatif", "Pabrik baja", "Tambang batu bara"], answer: 1 },
+            { q: "Bagaimana ekonomi kreatif membantu kesejahteraan sosial?", options: ["Menutup warung kecil", "Harga sangat mahal", "Menciptakan lapangan kerja baru", "Memonopoli pasar"], answer: 2 },
+            { q: "Membuat desain kemasan baru agar omset naik menunjukkan...", options: ["Perilaku Konsumtif", "Perilaku Inovatif dan Produktif", "Perilaku Spekulatif", "Perilaku Tradisional"], answer: 1 },
+            { q: "Ekonomi kreatif sangat mengandalkan hal berikut, KECUALI...", options: ["Pengetahuan", "Keterampilan", "Eksploitasi sumber daya alam", "Kreativitas"], answer: 2 },
+            { q: "Tujuan mendaftarkan Hak Kekayaan Intelektual (HKI) adalah...", options: ["Produk cepat basi", "Melindungi ide agar tidak dibajak", "Menaikkan pajak", "Mengurangi minat beli"], answer: 1 },
+            { q: "Contoh ekonomi kreatif di bidang kuliner adalah...", options: ["Beras dalam karung", "Seblak instan cup diseduh panas", "Ikan segar di pasar", "Sayur petik langsung"], answer: 1 },
+            { q: "Manfaat Digital Marketing bagi pelaku ekonomi kreatif?", options: ["Mempersulit komunikasi", "Menjangkau pasar luas dengan biaya murah", "Produk cepat rusak", "Mengurangi keuntungan"], answer: 1 },
+            { q: "Sikap wirausahawan kreatif adalah...", options: ["Pantang menyerah dan inovatif", "Cepat puas", "Takut mengambil risiko", "Gengsi tinggi"], answer: 0 }
+        ];
+
+        let currentQuizState = { currentQuestion: 0, score: 0 };
+        let timerInterval;
+        let timeRemaining = 600; // 10 minutes in seconds
+
+        function startQuizTimer() {
+            document.getElementById('quiz-intro').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            
+            // Reset state in case of replay
+            currentQuizState = { currentQuestion: 0, score: 0 };
+            timeRemaining = 600; 
+            updateTimerDisplay();
+            
+            renderQuiz();
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                if(timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuiz(true); // true = forced due to timeout
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let minutes = Math.floor(timeRemaining / 60);
+            let seconds = timeRemaining % 60;
+            document.getElementById('quiz-timer').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Warna peringatan jika waktu < 1 menit
+            if(timeRemaining < 60) {
+                document.getElementById('quiz-timer').parentElement.classList.replace('bg-red-100', 'bg-red-600');
+                document.getElementById('quiz-timer').parentElement.classList.replace('text-red-700', 'text-white');
+            }
+        }
+
+        function renderQuiz() {
+            const qData = quizData[currentQuizState.currentQuestion];
+            document.getElementById('quiz-progress').innerText = `Soal ${currentQuizState.currentQuestion + 1}/${quizData.length}`;
+            document.getElementById('quiz-question').innerText = `${currentQuizState.currentQuestion + 1}. ${qData.q}`;
+            
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "text-left w-full bg-gray-50 border-2 border-gray-200 p-4 rounded-xl hover:bg-blue-50 hover:border-blue-300 transition-all font-medium text-gray-700 flex items-center group";
+                btn.innerHTML = `<span class="bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center mr-3 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-colors font-bold">${String.fromCharCode(65 + index)}</span> ${opt}`;
+                btn.onclick = () => submitQuizAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function submitQuizAnswer(selectedIndex) {
+            if (selectedIndex === quizData[currentQuizState.currentQuestion].answer) {
+                currentQuizState.score += 10;
+            }
+
+            currentQuizState.currentQuestion++;
+            if (currentQuizState.currentQuestion < quizData.length) {
+                renderQuiz();
+            } else {
+                finishQuiz(false);
+            }
+        }
+
+        function finishQuiz(isTimeout) {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('quiz-progress').innerText = "Selesai";
+            
+            updateDashboardScore(); // Update top dashboard score
+            
+            const scoreCircle = document.getElementById('quiz-score-circle');
+            const verdict = document.getElementById('quiz-verdict');
+            const msg = document.getElementById('quiz-msg');
+            
+            scoreCircle.innerText = currentQuizState.score;
+
+            if(isTimeout) {
+                verdict.innerText = "Waktu Habis! ⏰";
+                msg.innerText = "Sayang sekali waktumu habis. Jangan menyerah, coba lagi agar lebih cepat ya!";
+                scoreCircle.className = "w-32 h-32 rounded-full border-8 border-red-500 flex items-center justify-center mx-auto mb-6 text-4xl font-black text-red-600 bg-red-50";
+            } else if (currentQuizState.score === 100) {
+                scoreCircle.className = "w-32 h-32 rounded-full border-8 border-green-500 flex items-center justify-center mx-auto mb-6 text-4xl font-black text-green-600 bg-green-50";
+                verdict.innerText = "Sempurna! 🌟";
+                verdict.className = "text-2xl font-bold text-green-600 mb-2";
+                msg.innerText = "Kamu sangat menguasai Ekonomi Kreatif!";
+            } else if (currentQuizState.score >= 60) {
+                scoreCircle.className = "w-32 h-32 rounded-full border-8 border-yellow-400 flex items-center justify-center mx-auto mb-6 text-4xl font-black text-yellow-500 bg-yellow-50";
+                verdict.innerText = "Bagus Sekali! 👍";
+                verdict.className = "text-2xl font-bold text-yellow-600 mb-2";
+                msg.innerText = "Pemahamanmu sudah baik.";
+            } else {
+                scoreCircle.className = "w-32 h-32 rounded-full border-8 border-red-400 flex items-center justify-center mx-auto mb-6 text-4xl font-black text-red-500 bg-red-50";
+                verdict.innerText = "Terus Belajar! 💪";
+                verdict.className = "text-2xl font-bold text-red-600 mb-2";
+                msg.innerText = "Jangan berkecil hati. Baca kembali materinya ya.";
+            }
+        }
+
+        function resetQuizFull() {
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-intro').classList.remove('hidden');
+            
+            // Reset timer colors
+            let timerEl = document.getElementById('quiz-timer').parentElement;
+            timerEl.classList.remove('bg-red-600', 'text-white');
+            timerEl.classList.add('bg-red-100', 'text-red-700');
+            document.getElementById('quiz-timer').innerText = "10:00";
+            
+            // Reset scores
+            currentQuizState.score = 0;
+            updateDashboardScore();
+        }
+
+    </script>
+</body>
+</html>
